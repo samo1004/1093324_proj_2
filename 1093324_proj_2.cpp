@@ -7,7 +7,7 @@
 using namespace std;
 using namespace std;
 int RegValues[32] = {0}; //存32registers value
-int misprediction = 0;
+
 int modify(int state_num, int mode)
 {
     if (mode) // plus
@@ -22,7 +22,19 @@ int modify(int state_num, int mode)
     }
     return state_num;
 }
-
+string turn2bc(int n)
+{
+    string s;
+    if (n == 0)
+        s = "SN";
+    else if (n == 1)
+        s = "WN";
+    else if (n == 2)
+        s = "WT";
+    else if (n == 3)
+        s = "ST";
+    return s;
+}
 int execode(vector<string> inst) //丟入修整成vector的一排inst.
 {
     int T = 0;
@@ -32,46 +44,29 @@ int execode(vector<string> inst) //丟入修整成vector的一排inst.
         string rs = inst[3];
         string reg_rd;
         string reg_rs;
-        cout << inst[4] << endl;
         int imm = stoi(inst[4]);
-        // stringstream ss;
-        // ss << inst[4];
-        // ss >> imm;
-        // cout << "imm size" << inst[4].size() << endl;
-        // if (inst[4].find('-'))
-        // {
-        //     imm = -imm;
-        // }
-        cout << "imm: " << imm << endl;
         if (rd.length() == 2)
         {
             reg_rd = rd.substr(1, 1);
-            cout << "reg_rd:" << reg_rd << endl;
         }
         else if (rd.length() == 3)
         {
             reg_rd = rd.substr(1, 2);
-            cout << "reg_rd:" << reg_rd << endl;
         }
         int reg_rd_num = stoi(reg_rd); //第幾個reg當作rd
         if (rs.length() == 2)
         {
             reg_rs = rs.substr(1, 1);
-            cout << "reg_rs:" << reg_rs << endl;
         }
         else if (rs.length() == 3)
         {
             reg_rs = rs.substr(1, 2);
-            cout << "reg_rs:" << reg_rs << endl;
         }
         int reg_rs_num = stoi(reg_rs); //第幾個reg當作rs
-        cout << "rsvalue:" << RegValues[reg_rs_num] << endl;
         RegValues[reg_rd_num] = RegValues[reg_rs_num] + imm;
-        cout << "rdvalue new:" << RegValues[reg_rd_num] << endl;
-        T = 0;
-        return T;
+        T = 0; // add不會跳
     }
-    else if (inst[1] == "beq")
+    else if (inst[1] == "beq" || inst[1] == "bne")
     {
         string rs1 = inst[2]; // r1
         string rs2 = inst[3]; // r2
@@ -80,39 +75,127 @@ int execode(vector<string> inst) //丟入修整成vector的一排inst.
         if (rs1.length() == 2)
         {
             reg_rs1 = rs1.substr(1, 1);
-            cout << "rs1:" << reg_rs1 << endl;
         }
         else if (rs1.length() == 3)
         {
             reg_rs1 = rs1.substr(1, 2);
-            cout << "rs1:" << reg_rs1 << endl;
         }
         int reg_rs1_num = stoi(reg_rs1); //第幾個reg當作rs1
         if (rs2.length() == 2)
         {
             reg_rs2 = rs2.substr(1, 1);
-            cout << "rs2:" << reg_rs2 << endl;
         }
         else if (rs2.length() == 3)
         {
             reg_rs2 = rs2.substr(1, 2);
-            cout << "rs2:" << reg_rs2 << endl;
         }
         int reg_rs2_num = stoi(reg_rs2); //第幾個reg當作rs2
-        cout << "rs1value:" << RegValues[reg_rs1_num] << endl;
-        cout << "rs2value:" << RegValues[reg_rs2_num] << endl;
         if (RegValues[reg_rs1_num] == RegValues[reg_rs2_num])
         {
-            cout << "equal" << endl;
-            T = 1;
+            if (inst[1] == "beq")
+                T = 1;
+            else if (inst[1] == "bne")
+                T = 0;
         }
         else
         {
-            cout << "not equal" << endl;
-            T = 0;
+            if (inst[1] == "beq")
+                T = 0;
+            else if (inst[1] == "bne")
+                T = 1;
         }
-        return T;
     }
+    else if (inst[1] == "li")
+    {
+        string rd = inst[2];
+        string reg_rd;
+        if (rd.length() == 2)
+        {
+            reg_rd = rd.substr(1, 1);
+        }
+        else if (rd.length() == 3)
+        {
+            reg_rd = rd.substr(1, 2);
+        }
+        int reg_rd_num = stoi(reg_rd); //第幾個reg當作rd
+        // cout << "reg_rd_num:" << reg_rd_num << endl;
+        RegValues[reg_rd_num] = stoi(inst[3]);
+        // cout << "store value:" << RegValues[reg_rd_num] << endl;
+        T = 0;
+    }
+    else if (inst[1] == "add")
+    {
+        string rd = inst[2];
+        string rs1 = inst[3];
+        string rs2 = inst[4];
+        string reg_rd;
+        string reg_rs1;
+        string reg_rs2;
+        if (rd.length() == 2)
+        {
+            reg_rd = rd.substr(1, 1);
+        }
+        else if (rd.length() == 3)
+        {
+            reg_rd = rd.substr(1, 2);
+        }
+        int reg_rd_num = stoi(reg_rd); //第幾個reg當作rd
+        if (rs1.length() == 2)
+        {
+            reg_rs1 = rs1.substr(1, 1);
+        }
+        else if (rs1.length() == 3)
+        {
+            reg_rs1 = rs1.substr(1, 2);
+        }
+        int reg_rs1_num = stoi(reg_rs1); //第幾個reg當作rs
+        if (rs2.length() == 2)
+        {
+            reg_rs2 = rs2.substr(1, 1);
+        }
+        else if (rs2.length() == 3)
+        {
+            reg_rs2 = rs2.substr(1, 2);
+        }
+        int reg_rs2_num = stoi(reg_rs2); //第幾個reg當作rs
+        cout << RegValues[reg_rs1_num] << " + " << RegValues[reg_rs2_num] << " = ";
+        RegValues[reg_rd_num] = RegValues[reg_rs1_num] + RegValues[reg_rs2_num];
+        cout << RegValues[reg_rd_num] << endl;
+        T = 0;
+    }
+    else if (inst[1] == "andi")
+    {
+        string rd = inst[2];
+        string rs = inst[3];
+        string reg_rd;
+        string reg_rs;
+        int imm = stoi(inst[4]);
+        if (rd.length() == 2)
+        {
+            reg_rd = rd.substr(1, 1);
+        }
+        else if (rd.length() == 3)
+        {
+            reg_rd = rd.substr(1, 2);
+        }
+        int reg_rd_num = stoi(reg_rd); //第幾個reg當作rd
+        if (rs.length() == 2)
+        {
+            reg_rs = rs.substr(1, 1);
+        }
+        else if (rs.length() == 3)
+        {
+            reg_rs = rs.substr(1, 2);
+        }
+        int reg_rs_num = stoi(reg_rs); //第幾個reg當作rs
+        cout << RegValues[reg_rs_num] << " & " << imm << " = ";
+        RegValues[reg_rd_num] = RegValues[reg_rs_num] & imm;
+        cout << RegValues[reg_rd_num] << endl;
+        // cout << RegValues[reg_rd_num] << endl;
+        T = 0; // and不會跳
+    }
+
+    return T;
 }
 
 int en = 0; // entry數目
@@ -122,23 +205,42 @@ int which_entry(int instcount)
 }
 int predict(string his, map<string, int> states) // return 0 or 1(0:N,1:T)
 {
+    int re = 0;
     if (states[his] == 0 || states[his] == 1)
     {
-        return 0; // N
+        re = 0; // N
     }
     else if (states[his] == 2 || states[his] == 3)
     {
-        return 1; // T
+        re = 1; // T
     }
+    return re;
 }
 int main()
 {
+
+    /////////////////////////////////
     RegValues[0] = 0;
     vector<string> in;
     vector<vector<string>> mycode;
     fstream f("input.txt");
-    cout << "enter the number of entries: ";
+    cout << "enter the number of entries(2^n,n>0): ";
     cin >> en;
+    //
+    streambuf *psbuf, *backup;
+    ofstream file;
+    file.open("output.txt");
+    backup = cout.rdbuf();
+    psbuf = file.rdbuf();
+    cout.rdbuf(psbuf); // cout定向到文件
+    //
+    int misprediction[en];
+    for (int i = 0; i < en; i++)
+    {
+        misprediction[i] = 0;
+    }
+    for (auto i : misprediction)
+        cout << i << " ";
     map<string, int> states_of_entries[en];
     for (int i = 0; i < en; i++) // initialize each states_of_entries
     {
@@ -155,13 +257,9 @@ int main()
     {
         in.push_back(s);
     }
-    for (auto i : in) //將註解部分移除
+    for (int i = 0; i < in.size(); i++) //將註解部分移除
     {
-        while (i.find(";") != string::npos)
-        {
-            i.erase(i.find(";"), i.find("\n"));
-        }
-        // cout << i << endl;
+        in[i] = in[i].substr(0, in[i].find(";"));
     }
     string tmp = "";
     vector<string> temp_vec;
@@ -214,8 +312,8 @@ int main()
         }
     }
     /////////////////////////////////////////////
-    cout << "\n>>>>>instcount_or_label<<<<<\n\n";
-    cout << "inst.s:\n\n";
+    cout << "\n>>>>>instcount_or_label<<<<<\n";
+    cout << "inst.s:\n";
     for (int i = 0; i < lines; i++)
     {
         if (instcount_or_label[i] != 999)
@@ -228,72 +326,76 @@ int main()
             cout << endl;
         }
     }
-    cout << "\nlabels:\n\n";
+    cout << "\nlabels:\n";
     for (auto i : record_labels)
     {
         cout << i.first << ": " << i.second << endl;
     }
-    cout << endl;
-    /////////////////////////////////////////////
 
-    cout << "start>>\n\n";
+    /////////////////////////////////////////////
+    // system("pause");
+    cout << "start>>\n";
     for (int i = 0; i < en; i++)
     {
         cout << "entry " << i << " initial history: " << history[i] << endl;
         cout << "entry " << i << " initial state: ";
         for (auto j : states_of_entries[i])
         {
-            cout << "[" << j.first << "," << j.second << "] ";
+            cout << "[" << j.first << "," << turn2bc(j.second) << "] ";
         }
         cout << endl;
     }
+    cout << "========================================================================================================\n";
     //開始預測
-    // int count = 0;
     int TorNT;
     int actual;
-    int count = 0;
-    for (int i = 0; i < lines; i++ /*, count++*/) //如果沒跳就一直望下走
+    for (int i = 0; i < lines; i++) //如果沒跳就一直望下走
     {
-        // if (count > 10)
-        //     break;
-        cout << "now code :";
-        for (auto j : mycode[i])
+        if (instcount_or_label[i] == 999) // label就直接跳過
         {
-            cout << "[" << j << "] ";
-        }
-        cout << "using entry: " << which_entry(instcount_or_label[i]) << endl;
-        // if (count > 10)
-        //     break;
-        if (mycode[i][0] == "End:")
-        {
-            cout << "complete\n";
-            break;
-        }
-        else if (instcount_or_label[i] == 999) // label就直接跳過
-        {
-            // cout << "label: " << mycode[i][0] << endl;
             continue;
         }
         else // inst先predict
         {
+            cout << in[i].substr(7, in[i].find(";")) << endl;
+            // print each entry's state
+            for (int j = 0; j < en; j++)
+            {
+                cout << "entry " << j << " :";
+                cout << "[" << history[j];
+                for (auto k : states_of_entries[j])
+                {
+                    cout << ", " << turn2bc(k.second);
+                }
+                cout << "]";
+                cout << endl;
+            }
+
+            cout << "\nusing entry: " << which_entry(instcount_or_label[i]) << endl;
             TorNT = predict(history[which_entry(instcount_or_label[i])],
                             states_of_entries[which_entry(instcount_or_label[i])]);
-            cout << "predict: " << (TorNT == 1 ? "Taken" : "Not Taken") << endl;
+            cout << "predict: " << (TorNT == 1 ? "T" : "N") << ", ";
             actual = execode(mycode[i]);
-            cout << "actual: " << (actual == 1 ? "Taken" : "Not Taken") << endl;
+            cout << "actual: " << (actual == 1 ? "T" : "N") << " => ";
 
             if (TorNT == actual)
             {
                 cout << "correct\n";
                 if (actual == 1)
                 {
-                    string temp = history[which_entry(instcount_or_label[i])].substr(1.2);
+                    states_of_entries[which_entry(instcount_or_label[i])][history[which_entry(instcount_or_label[i])]] =
+                        modify(states_of_entries[which_entry(instcount_or_label[i])][history[which_entry(instcount_or_label[i])]], 1);
+                    string temp;
+                    temp = history[which_entry(instcount_or_label[i])].substr(1.2);
                     temp += "1";
                     history[which_entry(instcount_or_label[i])] = temp;
                 }
                 else if (actual == 0)
                 {
-                    string temp = history[which_entry(instcount_or_label[i])].substr(1.2);
+                    states_of_entries[which_entry(instcount_or_label[i])][history[which_entry(instcount_or_label[i])]] =
+                        modify(states_of_entries[which_entry(instcount_or_label[i])][history[which_entry(instcount_or_label[i])]], 0);
+                    string temp;
+                    temp = history[which_entry(instcount_or_label[i])].substr(1.2);
                     temp += "0";
                     history[which_entry(instcount_or_label[i])] = temp;
                 }
@@ -301,11 +403,13 @@ int main()
             else
             {
                 cout << "wrong\n";
+                misprediction[which_entry(instcount_or_label[i])]++;
                 if (TorNT == 1 && actual == 0)
                 {
                     states_of_entries[which_entry(instcount_or_label[i])][history[which_entry(instcount_or_label[i])]] =
                         modify(states_of_entries[which_entry(instcount_or_label[i])][history[which_entry(instcount_or_label[i])]], 0);
-                    string temp = history[which_entry(instcount_or_label[i])].substr(1.2);
+                    string temp;
+                    temp = history[which_entry(instcount_or_label[i])].substr(1.2);
                     temp += "0";
                     history[which_entry(instcount_or_label[i])] = temp;
                 }
@@ -313,24 +417,23 @@ int main()
                 {
                     states_of_entries[which_entry(instcount_or_label[i])][history[which_entry(instcount_or_label[i])]] =
                         modify(states_of_entries[which_entry(instcount_or_label[i])][history[which_entry(instcount_or_label[i])]], 1);
-                    string temp = history[which_entry(instcount_or_label[i])].substr(1.2);
+                    string temp;
+                    temp = history[which_entry(instcount_or_label[i])].substr(1.2);
                     temp += "1";
                     history[which_entry(instcount_or_label[i])] = temp;
                 }
             }
-            cout << " current state: ";
-            for (auto j : states_of_entries[which_entry(instcount_or_label[i])])
-            {
-                cout << "[" << j.first << "," << j.second << "] ";
-            }
-            cout << "\n new history : " << history[which_entry(instcount_or_label[i])] << endl;
+            cout << "misprediction: " << misprediction[which_entry(instcount_or_label[i])] << endl;
+            cout << "========================================================================================================\n";
         }
         if (actual == 1) //真的有跳
         {
             i = record_labels[mycode[i][mycode[i].size() - 1]]; //跳到label繼續執行
-            cout << "jump to label: " << mycode[i][mycode[i].size() - 1] << endl;
         }
     }
-    system("pause");
+    //
+    cout.rdbuf(backup); //恢复cout输出重定向到终端
+    file.close();
+    //
     return 0;
 }
