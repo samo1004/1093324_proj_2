@@ -9,10 +9,10 @@
    將三個檔案放到同個資料夾，分別為程式碼(1093324_proj_2.cpp)、輸入文件(input.txt)及空白輸出文件(output.txt)，執行程式後，輸入entry數目，程式就會將結果輸出到output.txt中
    
 ## 程式碼解說 :
-   ###註: 影片解說有口誤
+
    先將文件讀入並輸入entry數後，將assembly code存入一個名為mycode的vector陣列，存成pc，operator，operands的格式
    ，如果是label就只存label，並且印出檢查
-   ```cpp
+```cpp
    string tmp = "";
     vector<string> temp_vec;
     for (int i = 0; i < in.size(); i++) //把字串處理成 pc,operator
@@ -35,7 +35,6 @@
         }
         mycode.push_back(temp_vec);
     }
-    ```
 ```
 之後將mycode中的code去做處理，記錄他是第幾個instruction(拿來判斷用哪個entry)或是這個label在這組code的第幾行(之後模擬執行branch時跳的地方)存到map中
 
