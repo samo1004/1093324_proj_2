@@ -1,1 +1,3 @@
 https://youtu.be/J6T-7ZUDGqg
+
+modify部分有口誤，如果實際taken且state小於3那就 +1，反之如果實際not taken且大於0就 -1
