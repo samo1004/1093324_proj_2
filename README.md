@@ -1,5 +1,9 @@
 # 1093324_proj_2
 
+##影片連結 :
+   
+   https://youtu.be/J6T-7ZUDGqg
+
 ## 程式 :
    
    輸入內容為組合語言的文件，執行過程中預測當前instruction會不會branch，並將預測過程和結果輸出檢查
